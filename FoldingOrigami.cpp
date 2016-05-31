@@ -1,3 +1,7 @@
+/*
+ * Written by Felipe Sasso <felipecsasso@gmail.com>, May 2016
+ */
+
 #include <iostream>
 #include <math.h>
 #include <time.h>
