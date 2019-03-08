@@ -1,14 +1,10 @@
-"""
-I wrote this code because I don't like Cineplex website. 
-I use this code only when I need to check what movies they have on a specific date.
-"""
-
 from bs4 import BeautifulSoup
-import requests
-import json
 from datetime import date
+import json
+import requests
+from requests.exceptions import ConnectionError
 
-banner_names_dict = {
+dict_banner_names = {
     "vip19plus": "movie-cat-wrap banner-vip19plus",
     "regular": "movie-cat-wrap banner-regular",
     "regular_3d": "movie-cat-wrap banner-regular_3d",
@@ -18,14 +14,19 @@ banner_names_dict = {
     "ultra_avx_atmos": "movie-cat-wrap banner-ultraavx_atmos"
 }
 
+def get_all_movies():
+    beautiful_soup = BeautifulSoup(get_html_text(), 'html.parser')
+    return beautiful_soup.findAll("div", {"class": "showtime-single"})
 
-class MoviesList(BeautifulSoup):
+def get_html_text():
 
-    def __init__(self, html_text, parser):
-        super().__init__(html_text, parser)
+    base_url = "https://www.cineplex.com/Showtimes/any-movie/cineplex-cinemas-lansdowne-and-vip?Date={}"
 
-    def get_all_movies(self):
-        return self.findAll("div", {"class": "showtime-single"})
+    try:
+        return requests.get(base_url.format(date.today().strftime("%m/%d/%Y"))).text
+    except ConnectionError:
+        print("No internet")
+        quit()
 
 class Movie():
     def __init__(self, resultset):
@@ -37,45 +38,34 @@ class Movie():
     def get_movie_duration(self):
         return self.resultset.findAll("span")[1].get_text()
 
-    def get_times_list(self):
+    def get_showtimes_list(self):
         return self.resultset.findAll("div", {"class" : "grid__item one-whole"})
 
-def get_page():
+def has_showtime(movie_times, key):
+    return len(movie_times.findAll("div", {"class": dict_banner_names[key]}))
 
-    base_url = "https://www.cineplex.com/Showtimes/any-movie/cineplex-cinemas-lansdowne-and-vip?Date={}"
 
-    try:
-        return requests.get(base_url.format(date.today().strftime("%d/%m/%Y")))
-    except ConnectionError:
-        print("Sem internet")
-
-def get_movies_info(movie_result):
+def get_movie_info(movie_data):
 
     dict_movie_details = {}
-    movie = Movie(movie_result)
+    movie = Movie(movie_data)
 
     dict_movie_details['title'] = movie.get_movie_title()
     dict_movie_details['duration'] = movie.get_movie_duration()
 
-    for movie_times in movie.get_times_list():
-        for key in banner_names_dict.keys():
-            if(len(movie_times.findAll("div", {"class": banner_names_dict[key]}))):
+    for showtimes in movie.get_showtimes_list():
+        for key in dict_banner_names.keys():
+            if(has_showtime(showtimes, key)):
                 dict_movie_details[key] = []
-                for time in movie_times.findAll("li"):
+                for time in showtimes.findAll("li"):
                     dict_movie_details[key].append(time.get_text().strip())
 
     return dict_movie_details
 
-r = get_page()
-
-bs = MoviesList(r.text, 'html.parser')
-
-# import pdb; pdb.set_trace()
-
 id = 0
-dict = {}
-for movie_result in bs.get_all_movies():
-    dict[id] = get_movies_info(movie_result)
+dict_movies_details = {}
+for movie_data in get_all_movies():
+    dict_movies_details[id] = get_movie_info(movie_data)
     id += 1
 
-print(dict)
+print(json.dumps(dict_movies_details))
