@@ -1,7 +1,10 @@
 """
 This code scraps "today" showtime from Cineplex website and save it in a python dictionary.
-It uses requests module to make GET requests to the website, BeautifulSoup library for parsing HTML and datime module to get today date.
+It uses requests module to make GET requests to the website, BeautifulSoup library for
+parsing HTML and datime module to get today date.
 You can convert the dictionary to json format using json module with json.dumps(dict).
+
+This code was developed using python3.7
 """
 from bs4 import BeautifulSoup
 from datetime import date
@@ -50,7 +53,7 @@ def get_html_text():
 class Movie():
     # Movie class receives one of those results from get_all_movies
     # Methods scrap movie title, movie duration and a list containing the movie showtime
-    # Each method searches for specifics html classes for scraping data
+    # Each method searches for specifics html classes to scraping data
 
     def __init__(self, resultset):
         self.resultset = resultset
@@ -73,6 +76,7 @@ def has_showtime(movie_times, category):
 def get_movie_info(movie_data):
     # Creates a Movie object and gets title, duration and showtime from that object
     # Each of them is saved in dict_movie_details
+    # In the end, the method returns the dictionary dict_movie_details
 
     dict_movie_details = {}
     movie = Movie(movie_data)
@@ -101,4 +105,6 @@ for movie_data in get_all_movies():
     dict_movies_details[id] = get_movie_info(movie_data)
     id += 1
 
+# dict_movies_details has every movie and every showtime
+# You can pretty print it or save it as json
 print(dict_movies_details)
