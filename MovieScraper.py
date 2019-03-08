@@ -1,7 +1,6 @@
 """
-This code scraps "today" showtime from Cineplex website and save in a python dictionary.
-It uses requests module to make GET requests to the website, BeautifulSoup library for
-parsing HTML and datime module to get today date.
+This code scraps "today" showtime from Cineplex website and save it in a python dictionary.
+It uses requests module to make GET requests to the website, BeautifulSoup library for parsing HTML and datime module to get today date.
 You can convert the dictionary to json format using json module with json.dumps(dict).
 """
 from bs4 import BeautifulSoup
@@ -24,6 +23,7 @@ dict_category_names = {
     "ultra_avx_atmos": "movie-cat-wrap banner-ultraavx_atmos"
 }
 
+
 def get_all_movies():
     # This method starts the BeautifulSoup scraper using HTML from get_html_text()
     # The scraper returns all div tags that have the showtime-single class
@@ -31,6 +31,7 @@ def get_all_movies():
 
     beautiful_soup = BeautifulSoup(get_html_text(), 'html.parser')
     return beautiful_soup.findAll("div", {"class": "showtime-single"})
+
 
 def get_html_text():
     # This method makes a GET request to Cineplex website using requests.get
@@ -45,6 +46,7 @@ def get_html_text():
         print("No internet")
         quit()
 
+
 class Movie():
     # Movie class receives one of those results from get_all_movies
     # Methods scrap movie title, movie duration and a list containing the movie showtime
@@ -54,13 +56,14 @@ class Movie():
         self.resultset = resultset
 
     def get_movie_title(self):
-        return self.resultset.findAll("a", {"class" : "movie-details-link-click"})[0].get_text().strip()
+        return self.resultset.findAll("a", {"class": "movie-details-link-click"})[0].get_text().strip()
 
     def get_movie_duration(self):
         return self.resultset.findAll("span")[1].get_text()
 
     def get_showtimes_list(self):
-        return self.resultset.findAll("div", {"class" : "grid__item one-whole"})
+        return self.resultset.findAll("div", {"class": "grid__item one-whole"})
+
 
 def has_showtime(movie_times, category):
     # It returns True if there is any showtime available for that category
